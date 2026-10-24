@@ -149,3 +149,24 @@ def test_original_trio_cache_filter_reads_same_board(tmp_path, monkeypatch):
     assert load_trio(["R"]) == {
         "R": {frozenset((1, 2, 3)): 12.3, frozenset((3, 4, 5)): 14.5}
     }
+
+
+def test_original_alembic_columns_support_native_picks_storage(tmp_path, monkeypatch):
+    """Apply original migrations to SQLite and exercise native UPSERT columns."""
+    from scripts.reconstruct_runtime import migrate_replay_storage
+    from src import database
+
+    path = tmp_path / "runtime.db"
+    monkeypatch.setattr(database, "DB_PATH", path)
+    database.init_db()
+    database.migrate_db()
+    migrate_replay_storage(path)
+    migrate_replay_storage(path)
+    with sqlite3.connect(path) as c:
+        for table, wanted in (
+            ("wt_races", {"cup_grade", "cup_name"}),
+            ("type_lab_picks", {"p3_order", "pw_ent", "win_tf_odds"}),
+        ):
+            assert wanted <= {
+                r[1] for r in c.execute("PRAGMA table_info(" + table + ")")
+            }
