@@ -84,7 +84,9 @@ def test_checkpoint_includes_committed_uncheckpointed_wal(tmp_path, monkeypatch)
     writer.execute("INSERT INTO wt_races VALUES ('20261023_01_01','2026-10-23')")
     writer.execute("INSERT INTO wt_entries VALUES ('20261023_01_01')")
     writer.commit()
-    monkeypatch.setattr(core, "crypt", lambda src, dst, **kwargs: shutil.copyfile(src, dst))
+    monkeypatch.setattr(
+        core, "crypt", lambda src, dst, **kwargs: shutil.copyfile(src, dst)
+    )
     report = {"days": [{"rows": {"wt_races": 1, "wt_entries": 1}}]}
     output = tmp_path / "checkpoint.gpg"
     core.save_database_checkpoint(path, output, report)
@@ -95,3 +97,31 @@ def test_checkpoint_includes_committed_uncheckpointed_wal(tmp_path, monkeypatch)
         assert restored.execute("SELECT COUNT(*) FROM wt_entries").fetchone()[0] == 1
     assert report["verified_checkpoint_counts"] == {"wt_races": 1, "wt_entries": 1}
     writer.close()
+
+
+def test_original_odds_loaders_read_real_sqlite_values_unchanged(tmp_path, monkeypatch):
+    """Exercise the two original SQL loaders through the storage-only bridge."""
+    from scripts.reconstruct_odds import ReadConnection
+    from src import database
+
+    from scripts import train_odds_prediction_tf as original
+
+    path = tmp_path / "odds.db"
+    monkeypatch.setattr(database, "DB_PATH", path)
+    database.init_db()
+    database.migrate_db()
+    with sqlite3.connect(path) as c:
+        c.execute(
+            "INSERT INTO wt_entries(race_key,frame_no,race_point,prediction_mark,player_class,style,line_group,line_size,line_pos,is_line_leader,first_rate,second_rate,third_rate) VALUES ('20250101_01_01',1,90.5,1,'A1','逃',1,3,1,1,20,30,40)"
+        )
+        c.executemany(
+            "INSERT INTO wt_odds(race_key,bet_type,combination,odds_value) VALUES ('20250101_01_01','trifecta',?,?)",
+            [("1-2-3", 25.7), ("1-3-2", 9999.9)],
+        )
+    monkeypatch.setattr(original, "_connect", lambda: ReadConnection(path))
+    monkeypatch.setattr(original, "N_CAR", 7)
+    entries = original._load_entries(["20250101_01_01"])
+    boards = original._load_final_boards(["20250101_01_01"])
+    assert entries["20250101_01_01"][1]["race_point"] == 90.5
+    assert entries["20250101_01_01"][1]["mark"] == 1
+    assert boards == {"20250101_01_01": {(1, 2, 3): 25.7}}
