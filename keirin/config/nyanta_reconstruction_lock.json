@@ -101,6 +101,8 @@
     "keirin/scripts/exp_axis_rule_decomposition.py": "3281f74f69565c91a7d0670a36515a3c89a4295a85fecf7002bd1086b4097912",
     "keirin/scripts/gen_wf_preds_9car.py": "ac7fcfd0f132013c8d6f77112c9bb4c5a59acb28de3e588081f7ebba84fc89b2",
     "keirin/scripts/exp_highpay_fav_bust.py": "6406a7655435d14bbb570c14d5d6a0e42ae89ddd0a1e2962d5ed04c33ea45c2c",
-    "keirin/src/entry_health.py": "9ee334c02f709bdfc7f578c7789c6615b37860b88bf9d66d3f667548e67c242d"
-  }
+    "keirin/src/entry_health.py": "9ee334c02f709bdfc7f578c7789c6615b37860b88bf9d66d3f667548e67c242d",
+    "keirin/scripts/exp_7s7a_payout_structure.py": "f7527f0cd635f9ceb0c2e5d81ac67b54db94e0de819ac239c00352176fc9666a"
+  },
+  "confirmed_input_policy": "User explicitly chose unchanged original builtin imputation; no extra zero-score race exclusions."
 }
