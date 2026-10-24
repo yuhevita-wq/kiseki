@@ -122,6 +122,46 @@ def main() -> None:
             if n
             else None,
         }
+    # Classify using reconstructed probabilities plus actual collected inputs.
+    # This is distinct from the original-input rule replay already recorded.
+    from scripts.build_type_lab_picks import _load_entries, _load_race_meta
+    from src.type_lab import race_shape
+
+    expected_types = {}
+    for row in reference["data"]["type_lab"]["picks"]:
+        expected_types.setdefault(str(row["race_key"]), set()).add(row["type_label"])
+    keys = sorted(expected_types)
+    entries, metas = _load_entries(keys), _load_race_meta(keys)
+    type_rows = []
+    for rk in keys:
+        ent, meta = entries.get(rk), metas.get(rk)
+        if not ent or not meta or set(ent) != set(p3.get(rk, {})):
+            continue
+        shape = race_shape(
+            p3[rk],
+            {c: v["line_group"] for c, v in ent.items()},
+            {c: v["line_pos"] for c, v in ent.items()},
+            {c: v["style"] for c, v in ent.items()},
+            {c: v["race_point"] for c, v in ent.items()},
+            {c: v["behind"] for c, v in ent.items()},
+            meta.get("day_index") or 0,
+            pw.get(rk),
+        )
+        if shape is not None:
+            type_rows.append(
+                {
+                    "race_key": rk,
+                    "type": shape.type_label,
+                    "reference_types": sorted(expected_types[rk]),
+                    "equal": expected_types[rk] == {shape.type_label},
+                }
+            )
+    type_summary = {
+        "n": len(type_rows),
+        "n_equal": sum(r["equal"] for r in type_rows),
+        "missing": len(keys) - len(type_rows),
+        "input_asof_verified": False,
+    }
     out = {
         "date": "2026-10-23",
         "reference_captured_at": reference["captured_at"],
@@ -130,7 +170,7 @@ def main() -> None:
         "model_probability_scale": "raw; no additional calibration",
         "original_issuance_probabilities_verified": False,
         "note": "Compares current original public display values at capture time; not guaranteed original issuance-time probabilities. No full model equality is claimed.",
-        "reconstructed_type_agreement": None,
+        "reconstructed_type_agreement": type_summary,
         "plan_agreement": None,
         "purchase_agreement": None,
     }
@@ -138,7 +178,9 @@ def main() -> None:
     args.output.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n")
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "comparison.json"
-        path.write_text(json.dumps(rows, ensure_ascii=False))
+        path.write_text(
+            json.dumps({"probabilities": rows, "types": type_rows}, ensure_ascii=False)
+        )
         crypt(path, args.output.with_suffix(".rows.json.gpg"))
     print(json.dumps(out, ensure_ascii=False))
 
