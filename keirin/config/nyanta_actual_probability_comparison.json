@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-23",
+  "reference_captured_at": "2026-10-24T01:42:18.416847+00:00",
+  "summary": {
+    "win": {
+      "n": 592,
+      "n_equal_at_display_precision": 45,
+      "mean_absolute_delta_pp": 1.9035677207764745
+    },
+    "top3": {
+      "n": 592,
+      "n_equal_at_display_precision": 17,
+      "mean_absolute_delta_pp": 3.4486192544550445
+    }
+  },
+  "missing_probabilities": 0,
+  "model_probability_scale": "raw; no additional calibration",
+  "original_issuance_probabilities_verified": false,
+  "note": "Compares current original public display values at capture time; not guaranteed original issuance-time probabilities. No full model equality is claimed.",
+  "reconstructed_type_agreement": null,
+  "plan_agreement": null,
+  "purchase_agreement": null
+}
