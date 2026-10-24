@@ -84,7 +84,6 @@ def unpack(encrypted: Path, dest: Path, allowed: set[str]) -> None:
 
 def prepare(args) -> None:
     """Combine genuine WF/frozen predictions and copy only real requested odds."""
-    import numpy as np
     import pandas as pd
     from src import database
     from src.models.trainer import load_model
@@ -143,9 +142,14 @@ def prepare(args) -> None:
     sizes = dict(zip(features.race_key, features._n_entries))
     exp = ROOT / "data/exp_cache"
     exp.mkdir(parents=True, exist_ok=True)
+    # Match the original axis_detail_7car cache eligibility before the native
+    # trainer performs its unchanged max-races selection. Results are used only
+    # for historical cache eligibility, never as probability features.
+    finish = features[features.finish_order.between(1, 3)]
+    top3 = finish.groupby("race_key").frame_no.agg(lambda x: frozenset(x.astype(int)))
     details = []
     for rk, g in predictions.groupby("race_key", sort=True):
-        if sizes.get(rk) != 7 or len(g) != 7:
+        if sizes.get(rk) != 7 or len(g) != 7 or len(top3.get(rk, ())) != 3:
             continue
         details.append(
             {
@@ -162,10 +166,8 @@ def prepare(args) -> None:
     for n in (7, 9):
         original.N_CAR = n
         keys = sorted(original._load_wf_preds())
-        # Exact original default max-races selection; no independent sampling.
-        if len(keys) > 12000:
-            idx = np.linspace(0, len(keys) - 1, 12000).astype(int)
-            keys = [keys[i] for i in sorted(set(idx))]
+        # Fetch all genuine candidate boards first. Sampling is left entirely
+        # to the unchanged trainer, after original seven-car cache eligibility.
         selected.update(keys)
     by_day = {}
     for rk in sorted(selected):
@@ -180,6 +182,7 @@ def prepare(args) -> None:
         if c.execute("SELECT COUNT(*) FROM wt_odds").fetchone()[0]:
             raise RuntimeError("odds_preparation_requires_empty_original_odds_table")
     copied = 0
+    winning_trio_present = set()
     days = sorted(by_day)
     with tempfile.TemporaryDirectory() as tmp:
 
@@ -200,7 +203,7 @@ def prepare(args) -> None:
                         sqlite3.connect(database.DB_PATH) as dest,
                     ):
                         rows = source.execute(
-                            "SELECT race_key,bet_type,combination,odds_value,collected_at FROM wt_odds WHERE bet_type='trifecta' AND race_key IN ("
+                            "SELECT race_key,bet_type,combination,odds_value,collected_at FROM wt_odds WHERE bet_type IN ('trifecta','trio') AND race_key IN ("
                             + ",".join("?" for _ in keys)
                             + ")",
                             keys,
@@ -209,12 +212,29 @@ def prepare(args) -> None:
                             "INSERT INTO wt_odds(race_key,bet_type,combination,odds_value,collected_at) VALUES (?,?,?,?,?)",
                             rows,
                         )
+                    # Reuse the original parser/filter, including its exact
+                    # 0 < odds < 9999 criterion and combination parsing.
+                    from scripts.exp_7s7a_payout_structure import load_trio
+
+                    old_pg = load_trio.__globals__["_pg"]
+                    load_trio.__globals__["_pg"] = lambda: ReadConnection(
+                        database.DB_PATH
+                    )
+                    try:
+                        boards = load_trio(keys)
+                    finally:
+                        load_trio.__globals__["_pg"] = old_pg
+                    winning_trio_present.update(
+                        rk for rk, board in boards.items() if top3.get(rk) in board
+                    )
                     copied += len(rows)
                     db.unlink()
                     print(f"real odds {day}: {len(rows)} rows", flush=True)
+    eligible_details = [d for d in details if d["rk"] in winning_trio_present]
+    (exp / "axis_detail_7car.pkl").write_bytes(pickle.dumps(eligible_details))
     args.output.mkdir(parents=True, exist_ok=True)
     manifest = json.loads(args.manifest.read_text())
-    manifest["real_trifecta_odds_rows_copied"] = copied
+    manifest["real_trifecta_and_trio_odds_rows_copied"] = copied
     manifest["odds_requested_races"] = len(selected)
     save_database_checkpoint(
         database.DB_PATH, args.output / "odds-input.sqlite.gpg", manifest
@@ -232,6 +252,11 @@ def prepare(args) -> None:
                 "requested_races": len(selected),
                 "real_odds_rows": copied,
                 "default_max_races_per_car_count": 12000,
+                "seven_car_original_cache_candidates": len(details),
+                "seven_car_original_cache_eligible": len(eligible_details),
+                "cache_eligibility_source": "exp_7s7a_axis_and_band.build_detail: seven rows, exactly three top3 cars, winning trio in original load_trio board",
+                "sampling": "only unchanged original build_dataset performs sampling",
+                "validation_extension": "real archive through 2026-10-23; original legacy cache ended 2026-08-04",
                 "2026_core_fit": False,
                 "original_feature_count": 70,
                 "odds_feature_count": len(original.FEATURE_NAMES),
