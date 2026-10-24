@@ -1,0 +1,58 @@
+{
+  "period": [
+    "2026-10-23",
+    "2026-10-23"
+  ],
+  "candidate_rows": 540,
+  "candidate_races": 76,
+  "type_counts": {
+    "C": 20,
+    "F": 21,
+    "B": 11,
+    "A": 17,
+    "E": 5,
+    "D": 2
+  },
+  "adopted_races": 55,
+  "settled_adopted_races": 55,
+  "pending_adopted_races": 0,
+  "hit_rate_settled": 0.16363636363636364,
+  "stake_settled": 549900,
+  "official_return_settled": 290660,
+  "roi_settled": 0.5285688306964903,
+  "replay_clock": "07:20 JST each historical day; hypothetical single morning wave",
+  "original_issuance_asof_verified": false,
+  "system_rules_were_researched_on_2026_results": true,
+  "performance_claim": "Retrospective reconstruction replay only; not a proven point-in-time original-output reproduction or fully unseen system ROI",
+  "original_public_purchase_comparison": {
+    "adopt_skip": {
+      "n": 82,
+      "n_equal": 74
+    },
+    "adopted_plan": {
+      "n": 54,
+      "n_equal": 45
+    },
+    "bet_type": {
+      "n": 54,
+      "n_equal": 52
+    },
+    "combinations": {
+      "n": 54,
+      "n_equal": 9
+    },
+    "n_points": {
+      "n": 54,
+      "n_equal": 23
+    },
+    "stakes": {
+      "n": 54,
+      "n_equal": 2
+    },
+    "total_amount": {
+      "n": 54,
+      "n_equal": 53
+    }
+  },
+  "purchase_comparison_scope": "Captured original output vs explicit morning replay; original issuance-asof inputs unverified"
+}
