@@ -1,0 +1,14 @@
+{
+  "original_regression_trainer": "scripts.train_odds_prediction_tf.main",
+  "requested_races": 59042,
+  "real_odds_rows": 16287306,
+  "default_max_races_per_car_count": 12000,
+  "seven_car_original_cache_candidates": 53730,
+  "seven_car_original_cache_eligible": 53730,
+  "cache_eligibility_source": "exp_7s7a_axis_and_band.build_detail: seven rows, exactly three top3 cars, winning trio in original load_trio board",
+  "sampling": "only unchanged original build_dataset performs sampling",
+  "validation_extension": "real archive through 2026-10-23; original legacy cache ended 2026-08-04",
+  "2026_core_fit": false,
+  "original_feature_count": 70,
+  "odds_feature_count": 63
+}
