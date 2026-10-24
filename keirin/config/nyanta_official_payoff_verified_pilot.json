@@ -1,0 +1,17 @@
+{
+  "month": "2026-10",
+  "from": "2026-10-23",
+  "through": "2026-10-23",
+  "collector": "src.official_payoffs.collect (unchanged)",
+  "days": [
+    {
+      "date": "2026-10-23",
+      "target": 82,
+      "saved": 82,
+      "unconfirmed": 0,
+      "failed": 0,
+      "empty": 0
+    }
+  ],
+  "official_payout_rows": 360
+}
