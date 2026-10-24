@@ -84,7 +84,7 @@ def test_checkpoint_includes_committed_uncheckpointed_wal(tmp_path, monkeypatch)
     writer.execute("INSERT INTO wt_races VALUES ('20261023_01_01','2026-10-23')")
     writer.execute("INSERT INTO wt_entries VALUES ('20261023_01_01')")
     writer.commit()
-    monkeypatch.setattr(core, "crypt", lambda src, dst: shutil.copyfile(src, dst))
+    monkeypatch.setattr(core, "crypt", lambda src, dst, **kwargs: shutil.copyfile(src, dst))
     report = {"days": [{"rows": {"wt_races": 1, "wt_entries": 1}}]}
     output = tmp_path / "checkpoint.gpg"
     core.save_database_checkpoint(path, output, report)
