@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import gzip
+import hashlib
 import importlib.util
 import json
 import sqlite3
@@ -150,6 +152,7 @@ def main() -> None:
         "output",
     ):
         ap.add_argument("--" + name, required=True, type=Path)
+    ap.add_argument("--resume", type=Path)
     ap.add_argument("--from", dest="start", required=True)
     ap.add_argument("--to", dest="end", required=True)
     args = ap.parse_args()
@@ -175,7 +178,7 @@ def main() -> None:
     original_connection = database.get_connection
     replay_clock = [
         datetime.fromisoformat(args.start).replace(
-            tzinfo=timezone(timedelta(hours=9)), hour=5
+            tzinfo=timezone(timedelta(hours=9)), hour=7, minute=20
         )
     ]
 
@@ -186,7 +189,7 @@ def main() -> None:
             yield conn
 
     class ReplayTime(datetime):
-        """Explicit hypothetical 05:00 JST replay clock, not original asof proof."""
+        """Explicit hypothetical 07:20 JST replay clock, not original asof proof."""
 
         @classmethod
         def now(cls, tz=None):
@@ -196,6 +199,30 @@ def main() -> None:
     shared.datetime = ReplayTime
     build.get_connection = replay_connection
     candidates, accepted, skipped = [], [], []
+    args.output.mkdir(parents=True, exist_ok=True)
+    lineage = {
+        p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in (ROOT / "data/models").glob("*")
+        if p.suffix in {".pkl", ".txt"}
+    }
+    completed_through = None
+    if args.resume:
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "resume.json"
+            crypt(args.resume, p, decrypt=True)
+            prior = json.loads(p.read_text())
+        if (
+            prior["period"] != [args.start, args.end]
+            or prior["model_hashes"] != lineage
+        ):
+            raise RuntimeError("runtime_resume_lineage_mismatch")
+        candidates, accepted, skipped = (
+            prior["candidates"],
+            prior["accepted"],
+            prior["skips"],
+        )
+        completed_through = prior["completed_through"]
+        build.save(candidates)
     original_submit = adoption.submit_row
     original_skip = adoption._make_skip
 
@@ -226,10 +253,16 @@ def main() -> None:
     feats, _ = build.build_day_features(args.start, args.end)
     if feats is None or feats.term.isna().any():
         raise RuntimeError("period_cache_cannot_preserve_original_term_fill")
-    day = datetime.fromisoformat(args.start)
+    day = (
+        datetime.fromisoformat(completed_through) + timedelta(days=1)
+        if completed_through
+        else datetime.fromisoformat(args.start)
+    )
     while day.isoformat()[:10] <= args.end:
         text_day = day.isoformat()[:10]
-        replay_clock[0] = day.replace(tzinfo=timezone(timedelta(hours=9)), hour=5)
+        replay_clock[0] = day.replace(
+            tzinfo=timezone(timedelta(hours=9)), hour=7, minute=20
+        )
         f = feats[feats.race_date.astype(str) == text_day].copy()
         build._FEATURE_CACHE[(text_day, None)] = (f, prepare_X(f))
         with database.get_connection() as c:
@@ -244,6 +277,32 @@ def main() -> None:
             build.save(rows)
             candidates.extend(rows)
         adoption.run(text_day, "morning", True, None, False)
+        # Preserve actual original rows daily; a resumed job reuses them instead
+        # of rebuilding already completed dates with another model or snapshot.
+        state = {
+            "period": [args.start, args.end],
+            "model_hashes": lineage,
+            "completed_through": text_day,
+            "candidates": candidates,
+            "accepted": accepted,
+            "skips": skipped,
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "progress.json"
+            p.write_text(json.dumps(state, ensure_ascii=False, default=str))
+            crypt(p, args.output / "runtime-progress.json.gpg")
+        (args.output / "runtime-progress.json").write_text(
+            json.dumps(
+                {
+                    "completed_through": text_day,
+                    "candidate_rows": len(candidates),
+                    "adopted_races": len(accepted),
+                    "model_hashes": lineage,
+                },
+                indent=2,
+            )
+            + "\n"
+        )
         day += timedelta(days=1)
     # Use the actual native official-payout/tie/void settlement logic. --no-fetch
     # prevents an independent recollection while a payout collection is active.
@@ -288,12 +347,61 @@ def main() -> None:
         "stake_settled": amount,
         "official_return_settled": returned,
         "roi_settled": returned / amount if amount else None,
-        "replay_clock": "05:00 JST each historical day; hypothetical single morning wave",
+        "replay_clock": "07:20 JST each historical day; hypothetical single morning wave",
         "original_issuance_asof_verified": False,
         "system_rules_were_researched_on_2026_results": True,
         "performance_claim": "Retrospective reconstruction replay only; not a proven point-in-time original-output reproduction or fully unseen system ROI",
         "odds_model_meta": odds_meta,
     }
+    if args.start <= "2026-10-23" <= args.end:
+        reference = json.loads(
+            gzip.decompress(
+                (
+                    ROOT / "reconstruction/original_reference_20261023.json.gz"
+                ).read_bytes()
+            )
+        )
+        actual = {r["race_key"]: r for r in accepted}
+        metrics = {
+            k: {"n": 0, "n_equal": 0}
+            for k in (
+                "adopt_skip",
+                "adopted_plan",
+                "bet_type",
+                "combinations",
+                "n_points",
+                "stakes",
+                "total_amount",
+            )
+        }
+        for r in reference["data"]["displayed"]:
+            a = actual.get(r["race_key"])
+            metrics["adopt_skip"]["n"] += 1
+            metrics["adopt_skip"]["n_equal"] += int(bool(r["sold"]) == (a is not None))
+            if not r["sold"] or a is None:
+                continue
+            source = r.get("submitted_bet")
+            if not source or not source.get("lines"):
+                continue
+            original_legs = source["lines"]
+            before = {l["combo"]: int(l["stake"]) for l in original_legs}
+            after = {l["combo"]: int(l["stake"]) for l in a["legs"]}
+            checks = {
+                "adopted_plan": r["type_lab_plan"] == a["plan_key"],
+                "bet_type": {l["bet_type"] for l in original_legs}
+                == {"3連複" if a["bet_type"] == "trio" else "3連単"},
+                "combinations": set(before) == set(after),
+                "n_points": len(before) == len(after),
+                "stakes": before == after,
+                "total_amount": sum(before.values()) == sum(after.values()),
+            }
+            for field, equal in checks.items():
+                metrics[field]["n"] += 1
+                metrics[field]["n_equal"] += int(equal)
+        summary["original_public_purchase_comparison"] = metrics
+        summary["purchase_comparison_scope"] = (
+            "Captured original output vs explicit morning replay; original issuance-asof inputs unverified"
+        )
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "runtime-summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n"
