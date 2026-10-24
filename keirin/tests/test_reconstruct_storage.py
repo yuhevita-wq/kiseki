@@ -66,3 +66,32 @@ def test_conflicting_venue_metadata_is_rejected(tmp_path):
         merge_day(a, dst)
         with pytest.raises(RuntimeError, match="conflicting_venue_metadata"):
             merge_day(b, dst)
+
+
+def test_checkpoint_includes_committed_uncheckpointed_wal(tmp_path, monkeypatch):
+    """A physical .db copy loses WAL-only rows; SQLite backup must retain them."""
+    import shutil
+
+    import scripts.reconstruct_core as core
+
+    path = tmp_path / "source.db"
+    writer = sqlite3.connect(path)
+    writer.execute("PRAGMA journal_mode=WAL")
+    writer.execute("PRAGMA wal_autocheckpoint=0")
+    writer.executescript(
+        "CREATE TABLE wt_races(race_key TEXT,race_date TEXT); CREATE TABLE wt_entries(race_key TEXT);"
+    )
+    writer.execute("INSERT INTO wt_races VALUES ('20261023_01_01','2026-10-23')")
+    writer.execute("INSERT INTO wt_entries VALUES ('20261023_01_01')")
+    writer.commit()
+    monkeypatch.setattr(core, "crypt", lambda src, dst: shutil.copyfile(src, dst))
+    report = {"days": [{"rows": {"wt_races": 1, "wt_entries": 1}}]}
+    output = tmp_path / "checkpoint.gpg"
+    core.save_database_checkpoint(path, output, report)
+    with sqlite3.connect(output) as restored:
+        assert restored.execute("SELECT race_date FROM wt_races").fetchall() == [
+            ("2026-10-23",)
+        ]
+        assert restored.execute("SELECT COUNT(*) FROM wt_entries").fetchone()[0] == 1
+    assert report["verified_checkpoint_counts"] == {"wt_races": 1, "wt_entries": 1}
+    writer.close()
