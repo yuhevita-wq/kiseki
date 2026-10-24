@@ -1,0 +1,69 @@
+{
+  "months": 46,
+  "expected_days": 1392,
+  "decrypted_days": 1392,
+  "errors": [],
+  "wt_races": {
+    "rows": 105167,
+    "days_exists": 1392,
+    "nulls": {}
+  },
+  "wt_entries": {
+    "rows": 745485,
+    "days_exists": 1392,
+    "nulls": {
+      "pred_win_pct": 745485,
+      "pred_top3_pct": 745485,
+      "finish_order": 598,
+      "res_standing": 598,
+      "res_back": 598,
+      "final_half": 598
+    }
+  },
+  "wt_odds": {
+    "rows": 37082193,
+    "days_exists": 1392,
+    "nulls": {}
+  },
+  "wt_payoffs": {
+    "rows": 0,
+    "days_exists": 0,
+    "nulls": {}
+  },
+  "wt_odds_snapshot": {
+    "rows": 0,
+    "days_exists": 1392,
+    "nulls": {}
+  },
+  "races": 105167,
+  "entries": 745485,
+  "odds": 37082193,
+  "usable_core_races": 105080,
+  "complete_type_input_races": 96992,
+  "results_positive": 734841,
+  "dnf_zero": 10046,
+  "zero_scores": 2520,
+  "duplicate_keys": 0,
+  "races_without_entries": 0,
+  "entry_count_mismatches": 1137,
+  "wrong_day_races": 0,
+  "integrity_failures": 0,
+  "by_year": {
+    "2023": {
+      "races": 27530,
+      "core_complete_races": 27489
+    },
+    "2024": {
+      "races": 27795,
+      "core_complete_races": 27783
+    },
+    "2025": {
+      "races": 27458,
+      "core_complete_races": 27451
+    },
+    "2026": {
+      "races": 22384,
+      "core_complete_races": 22357
+    }
+  }
+}
