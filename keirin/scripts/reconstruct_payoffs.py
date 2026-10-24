@@ -51,6 +51,8 @@ def main() -> None:
                     (day.isoformat(),),
                 )
             ]
+        if not keys:
+            raise RuntimeError("requested_day_missing_from_decrypted_checkpoint")
         stats = official_payoffs.collect(keys)
         report["days"].append({"date": day.isoformat(), **stats})
         # Snapshot only missing-field repairs, not the whole original corpus.
