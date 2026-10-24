@@ -102,7 +102,16 @@
     "keirin/scripts/gen_wf_preds_9car.py": "ac7fcfd0f132013c8d6f77112c9bb4c5a59acb28de3e588081f7ebba84fc89b2",
     "keirin/scripts/exp_highpay_fav_bust.py": "6406a7655435d14bbb570c14d5d6a0e42ae89ddd0a1e2962d5ed04c33ea45c2c",
     "keirin/src/entry_health.py": "9ee334c02f709bdfc7f578c7789c6615b37860b88bf9d66d3f667548e67c242d",
-    "keirin/scripts/exp_7s7a_payout_structure.py": "f7527f0cd635f9ceb0c2e5d81ac67b54db94e0de819ac239c00352176fc9666a"
+    "keirin/scripts/exp_7s7a_payout_structure.py": "f7527f0cd635f9ceb0c2e5d81ac67b54db94e0de819ac239c00352176fc9666a",
+    "keirin/scripts/exp_7s7a_axis_and_band.py": "6f4c547d92f877a3eda2ffba0fec24e36df199aa566b07bbd9dc408e4bd5e934",
+    "keirin/scripts/settle_type_lab_picks.py": "3c15ea0093ce79fc5aa41b113d791fac5dc0273cc456e837d3da843056ceeeee",
+    "keirin/src/official_payoffs.py": "e7a2a7fa211b4bcbe931515754eab41709ac2bad199ab0e36e682bd985ef877c",
+    "keirin/src/result_top3.py": "fe2f03210fd7819477b359c6a5217b4f5de8c09114195fa59fc32ff564741a48",
+    "keirin/src/entrants.py": "718e40ef4be996ad68421cc5dc7d9375342872d480583ced4f8412e08e5c4d94",
+    "keirin/src/submit_window.py": "cf3f31c5ee0c8f9ccc6f1eb7f8ba4baa0e3e114b4a518c873976e29bd5f679d5",
+    "keirin/src/confident_pick.py": "f17433424e6fe78012409ab7c63e7338a00b215750c673a68df95d602f805b9b",
+    "backend/alembic/versions/202608141000_keirin_add_cup_grade.py": "0c9413d58230b6ada1055ef5ba6c77e8ef9fd81f87d95b1100db624a695f5640",
+    "backend/alembic/versions/202608272200_keirin_type_lab_outcome.py": "a70f2d6d2be4968b47ddd8d405fabb7e2a25ebf8ea04b01486bedc038891d469"
   },
   "confirmed_input_policy": "User explicitly chose unchanged original builtin imputation; no extra zero-score race exclusions."
 }
