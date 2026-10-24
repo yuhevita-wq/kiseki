@@ -1,0 +1,239 @@
+{
+  "month-2026-02": {
+    "period": [
+      "2026-02-01",
+      "2026-02-28"
+    ],
+    "types": {
+      "A": {
+        "adopted": 237,
+        "settled": 235,
+        "pending": 2,
+        "hits": 47,
+        "purchase_total": 2367900,
+        "purchase_settled": 2347900,
+        "official_return_settled": 2043720,
+        "net_settled": -304180,
+        "roi_settled": 0.8704459304058946
+      },
+      "B": {
+        "adopted": 219,
+        "settled": 218,
+        "pending": 1,
+        "hits": 47,
+        "purchase_total": 2188300,
+        "purchase_settled": 2178400,
+        "official_return_settled": 1316010,
+        "net_settled": -862390,
+        "roi_settled": 0.6041177010650018
+      },
+      "C": {
+        "adopted": 390,
+        "settled": 385,
+        "pending": 5,
+        "hits": 54,
+        "purchase_total": 3899000,
+        "purchase_settled": 3849100,
+        "official_return_settled": 2852330,
+        "net_settled": -996770,
+        "roi_settled": 0.7410381647657894
+      },
+      "D": {
+        "adopted": 90,
+        "settled": 89,
+        "pending": 1,
+        "hits": 23,
+        "purchase_total": 898900,
+        "purchase_settled": 888900,
+        "official_return_settled": 1894680,
+        "net_settled": 1005780,
+        "roi_settled": 2.131488356395545
+      },
+      "E": {
+        "adopted": 98,
+        "settled": 97,
+        "pending": 1,
+        "hits": 24,
+        "purchase_total": 980000,
+        "purchase_settled": 970000,
+        "official_return_settled": 612630,
+        "net_settled": -357370,
+        "roi_settled": 0.6315773195876289
+      },
+      "F": {
+        "adopted": 533,
+        "settled": 526,
+        "pending": 7,
+        "hits": 105,
+        "purchase_total": 5319200,
+        "purchase_settled": 5249200,
+        "official_return_settled": 3846450,
+        "net_settled": -1402750,
+        "roi_settled": 0.7327688028651985
+      }
+    },
+    "native_summary": {
+      "period": [
+        "2026-02-01",
+        "2026-02-28"
+      ],
+      "candidate_rows": 14889,
+      "candidate_races": 2016,
+      "type_counts": {
+        "B": 250,
+        "E": 181,
+        "C": 448,
+        "F": 675,
+        "A": 345,
+        "D": 117
+      },
+      "adopted_races": 1567,
+      "settled_adopted_races": 1550,
+      "pending_adopted_races": 17,
+      "hit_rate_settled": 0.1935483870967742,
+      "stake_settled": 15483500,
+      "official_return_settled": 12565820,
+      "roi_settled": 0.8115619853392321,
+      "replay_clock": "07:20 JST each historical day; hypothetical single morning wave",
+      "original_issuance_asof_verified": false,
+      "system_rules_were_researched_on_2026_results": true,
+      "performance_claim": "Retrospective reconstruction replay only; not a proven point-in-time original-output reproduction or fully unseen system ROI"
+    },
+    "settled_only": true,
+    "original_issuance_asof_verified": false
+  },
+  "pilot-2026-10-23": {
+    "period": [
+      "2026-10-23",
+      "2026-10-23"
+    ],
+    "types": {
+      "A": {
+        "adopted": 11,
+        "settled": 11,
+        "pending": 0,
+        "hits": 2,
+        "purchase_total": 110000,
+        "purchase_settled": 110000,
+        "official_return_settled": 111250,
+        "net_settled": 1250,
+        "roi_settled": 1.0113636363636365
+      },
+      "B": {
+        "adopted": 9,
+        "settled": 9,
+        "pending": 0,
+        "hits": 1,
+        "purchase_total": 90000,
+        "purchase_settled": 90000,
+        "official_return_settled": 27360,
+        "net_settled": -62640,
+        "roi_settled": 0.304
+      },
+      "C": {
+        "adopted": 17,
+        "settled": 17,
+        "pending": 0,
+        "hits": 1,
+        "purchase_total": 170000,
+        "purchase_settled": 170000,
+        "official_return_settled": 48360,
+        "net_settled": -121640,
+        "roi_settled": 0.28447058823529414
+      },
+      "D": {
+        "adopted": 2,
+        "settled": 2,
+        "pending": 0,
+        "hits": 0,
+        "purchase_total": 20000,
+        "purchase_settled": 20000,
+        "official_return_settled": 0,
+        "net_settled": -20000,
+        "roi_settled": 0.0
+      },
+      "E": {
+        "adopted": 2,
+        "settled": 2,
+        "pending": 0,
+        "hits": 1,
+        "purchase_total": 20000,
+        "purchase_settled": 20000,
+        "official_return_settled": 17200,
+        "net_settled": -2800,
+        "roi_settled": 0.86
+      },
+      "F": {
+        "adopted": 14,
+        "settled": 14,
+        "pending": 0,
+        "hits": 4,
+        "purchase_total": 139900,
+        "purchase_settled": 139900,
+        "official_return_settled": 86490,
+        "net_settled": -53410,
+        "roi_settled": 0.6182273052180128
+      }
+    },
+    "native_summary": {
+      "period": [
+        "2026-10-23",
+        "2026-10-23"
+      ],
+      "candidate_rows": 540,
+      "candidate_races": 76,
+      "type_counts": {
+        "C": 20,
+        "F": 21,
+        "B": 11,
+        "A": 17,
+        "E": 5,
+        "D": 2
+      },
+      "adopted_races": 55,
+      "settled_adopted_races": 55,
+      "pending_adopted_races": 0,
+      "hit_rate_settled": 0.16363636363636364,
+      "stake_settled": 549900,
+      "official_return_settled": 290660,
+      "roi_settled": 0.5285688306964903,
+      "replay_clock": "07:20 JST each historical day; hypothetical single morning wave",
+      "original_issuance_asof_verified": false,
+      "system_rules_were_researched_on_2026_results": true,
+      "performance_claim": "Retrospective reconstruction replay only; not a proven point-in-time original-output reproduction or fully unseen system ROI",
+      "original_public_purchase_comparison": {
+        "adopt_skip": {
+          "n": 82,
+          "n_equal": 74
+        },
+        "adopted_plan": {
+          "n": 54,
+          "n_equal": 45
+        },
+        "bet_type": {
+          "n": 54,
+          "n_equal": 52
+        },
+        "combinations": {
+          "n": 54,
+          "n_equal": 9
+        },
+        "n_points": {
+          "n": 54,
+          "n_equal": 23
+        },
+        "stakes": {
+          "n": 54,
+          "n_equal": 2
+        },
+        "total_amount": {
+          "n": 54,
+          "n_equal": 53
+        }
+      },
+      "purchase_comparison_scope": "Captured original output vs explicit morning replay; original issuance-asof inputs unverified"
+    },
+    "settled_only": false,
+    "original_issuance_asof_verified": false
+  }
+}
