@@ -125,3 +125,27 @@ def test_original_odds_loaders_read_real_sqlite_values_unchanged(tmp_path, monke
     assert entries["20250101_01_01"][1]["race_point"] == 90.5
     assert entries["20250101_01_01"][1]["mark"] == 1
     assert boards == {"20250101_01_01": {(1, 2, 3): 25.7}}
+
+
+def test_original_trio_cache_filter_reads_same_board(tmp_path, monkeypatch):
+    """Legacy cache eligibility must retain its original sentinel and parser."""
+    from scripts.exp_7s7a_payout_structure import load_trio
+    from scripts.reconstruct_odds import ReadConnection
+
+    path = tmp_path / "trio.db"
+    with sqlite3.connect(path) as c:
+        c.execute(
+            "CREATE TABLE wt_odds(race_key TEXT,bet_type TEXT,combination TEXT,odds_value REAL)"
+        )
+        c.executemany(
+            "INSERT INTO wt_odds VALUES ('R','trio',?,?)",
+            [
+                ("1=2=3", 12.3),
+                ("2-3-4", 9999),
+                ("3→4→5", 14.5),
+            ],
+        )
+    monkeypatch.setitem(load_trio.__globals__, "_pg", lambda: ReadConnection(path))
+    assert load_trio(["R"]) == {
+        "R": {frozenset((1, 2, 3)): 12.3, frozenset((3, 4, 5)): 14.5}
+    }
