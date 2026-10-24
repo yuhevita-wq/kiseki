@@ -22,11 +22,26 @@ def main() -> None:
     ap.add_argument("--checkpoint", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--first-day", type=int, default=1)
+    ap.add_argument("--resume", type=Path)
     args = ap.parse_args()
     from src import database, official_payoffs
 
     database.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     crypt(args.checkpoint, database.DB_PATH, decrypt=True)
+    if args.resume is not None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            prior = Path(tmp) / "prior.sqlite"
+            crypt(args.resume, prior, decrypt=True)
+            with sqlite3.connect(prior) as old, database.get_connection() as dest:
+                for rk, bt, combo, pay in old.execute(
+                    "SELECT race_key,bet_type,combination,payoff FROM wt_payoffs"
+                ):
+                    dest.execute(
+                        "INSERT OR IGNORE INTO wt_payoffs(race_key,bet_type,combination,payoff) VALUES (?,?,?,?)",
+                        (rk, bt, combo, pay),
+                    )
     y, m = map(int, args.month.split("-"))
     first = date(y, m, args.first_day)
     last = min(date(y, m, calendar.monthrange(y, m)[1]), date(2026, 10, 23))
@@ -55,6 +70,10 @@ def main() -> None:
             raise RuntimeError("requested_day_missing_from_decrypted_checkpoint")
         stats = official_payoffs.collect(keys)
         report["days"].append({"date": day.isoformat(), **stats})
+        report["complete"] = all(
+            not any(d[k] for k in ("failed", "unconfirmed", "empty"))
+            for d in report["days"]
+        )
         # Snapshot only missing-field repairs, not the whole original corpus.
         plaintext.unlink(missing_ok=True)
         with (
