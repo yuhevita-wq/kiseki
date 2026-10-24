@@ -268,7 +268,9 @@ def prepare(output: Path) -> None:
     )
 
 
-def train(target: str, checkpoint: Path, report_path: Path) -> None:
+def train(
+    target: str, checkpoint: Path, report_path: Path, do_fit: bool = True
+) -> None:
     """Run the original CLI training callback; report independent 2026 metrics."""
     from src import database
 
@@ -328,18 +330,19 @@ def train(target: str, checkpoint: Path, report_path: Path) -> None:
     model_name = "lgbm_wt_eval" if target == "top3" else "lgbm_wt_win"
     # win full-refits only <=2025-12-31, preserving the original full_refit mode
     # while never absorbing the external 2026 holdout into the saved model.
-    train_wt.callback(
-        from_date="2023-01-01",
-        to_date="2025-12-31" if target == "win" else None,
-        test_from=None if target == "win" else "2026-01-01",
-        test_to=None if target == "win" else "2026-10-23",
-        save_as=model_name,
-        full_refit=target == "win",
-        promote=False,
-        target_kind=target,
-        force_overwrite_vintage=False,
-        dnf_weight=1.0,
-    )
+    if do_fit:
+        train_wt.callback(
+            from_date="2023-01-01",
+            to_date="2025-12-31" if target == "win" else None,
+            test_from=None if target == "win" else "2026-01-01",
+            test_to=None if target == "win" else "2026-10-23",
+            save_as=model_name,
+            full_refit=target == "win",
+            promote=False,
+            target_kind=target,
+            force_overwrite_vintage=False,
+            dnf_weight=1.0,
+        )
     feats = f.build_features_wt(validated_loader("2026-01-01", "2026-10-23"))
     feats = feats[feats.finish_order.notna()].copy()
     model = load_model(model_name)
@@ -380,6 +383,14 @@ def train(target: str, checkpoint: Path, report_path: Path) -> None:
         "overlap_races": 0,
         "train_period": ["2023-01-01", "2025-12-31"],
         "holdout_period": ["2026-01-01", "2026-10-23"],
+        "actual_holdout_date_range": [
+            str(feats.race_date.min()),
+            str(feats.race_date.max()),
+        ],
+        "model_refit_in_this_job": do_fit,
+        "model_sha256": hashlib.sha256(
+            (ROOT / "data/models" / (model_name + ".pkl")).read_bytes()
+        ).hexdigest(),
         "auc": float(roc_auc_score(truth, pred)),
         "log_loss": float(log_loss(truth, pred)),
         "brier": float(brier_score_loss(truth, pred)),
@@ -416,17 +427,42 @@ def train(target: str, checkpoint: Path, report_path: Path) -> None:
 def main() -> None:
     """Explicit preparation/training stages; never publish a provisional model."""
     ap = argparse.ArgumentParser()
-    ap.add_argument("stage", choices=["prepare", "train"])
+    ap.add_argument("stage", choices=["prepare", "train", "evaluate"])
     ap.add_argument("--checkpoint", type=Path, required=True)
     ap.add_argument("--target", choices=["top3", "win"], default="top3")
+    ap.add_argument("--model-artifact", type=Path)
     ap.add_argument(
         "--report", type=Path, default=ROOT / "data/reconstruction/core-report.json"
     )
     args = ap.parse_args()
     if args.stage == "prepare":
         prepare(args.checkpoint)
-    else:
+    elif args.stage == "train":
         train(args.target, args.checkpoint, args.report)
+    else:
+        if args.model_artifact is None:
+            raise RuntimeError("actual_trained_model_artifact_required")
+        import tarfile
+
+        model_name = "lgbm_wt_eval" if args.target == "top3" else "lgbm_wt_win"
+        model_dir = ROOT / "data/models"
+        model_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory() as tmp:
+            tar = Path(tmp) / "model.tar"
+            crypt(args.model_artifact, tar, decrypt=True)
+            with tarfile.open(tar) as archive:
+                for member in archive.getmembers():
+                    if (
+                        member.name
+                        not in (model_name + ".pkl", model_name + ".meta.json")
+                        or not member.isfile()
+                    ):
+                        raise RuntimeError("unexpected_model_archive_member")
+                    source = archive.extractfile(member)
+                    if source is None:
+                        raise RuntimeError("invalid_model_archive")
+                    (model_dir / member.name).write_bytes(source.read())
+        train(args.target, args.checkpoint, args.report, do_fit=False)
 
 
 if __name__ == "__main__":
