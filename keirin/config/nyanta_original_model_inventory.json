@@ -1,0 +1,104 @@
+[
+  {
+    "name": "lgbm_wt",
+    "meta": {
+      "model_name": "lgbm_wt",
+      "target": "top3_flag",
+      "full_refit": true,
+      "from": "2022-12-01",
+      "to": null,
+      "test_from": null,
+      "test_to": null,
+      "n_train_races": 100696,
+      "fit_rows": 712765,
+      "test_auc_holdout": 0.7789143187054788,
+      "feature_count": 60,
+      "trained_at": "2026-08-04T08:13:42",
+      "git_commit": "1fea5f9"
+    },
+    "sha256": "41b1d65aec124b3f13afba6b8e7711541e8b5df7b03f19acf556e897e54ace34",
+    "feature_count": 60,
+    "current_features_match": false,
+    "missing_current": [
+      "line_leader_rp",
+      "line_leader_rp_gap_top",
+      "line_leader_rp_rank",
+      "line_leader_is_weakest",
+      "line_rp_spread",
+      "line_rp_lead_minus_deputy",
+      "cup_n_so_far",
+      "cup_top3_rate",
+      "cup_win_rate",
+      "cup_mean_order_n"
+    ],
+    "extra_old": []
+  },
+  {
+    "name": "lgbm_wt_bad",
+    "meta": {
+      "model_name": "lgbm_wt_bad",
+      "target": "bad6_flag",
+      "full_refit": true,
+      "from": "2022-12-01",
+      "to": null,
+      "test_from": null,
+      "test_to": null,
+      "n_train_races": 100722,
+      "fit_rows": 712947,
+      "test_auc_holdout": 0.7552890707191355,
+      "feature_count": 60,
+      "trained_at": "2026-08-04T14:18:55",
+      "git_commit": "5e070f1"
+    },
+    "sha256": "d22512506e455b0dfd9b01091f19d0411ce8238fb2017497c735b8c50ad8eb68",
+    "feature_count": 60,
+    "current_features_match": false,
+    "missing_current": [
+      "line_leader_rp",
+      "line_leader_rp_gap_top",
+      "line_leader_rp_rank",
+      "line_leader_is_weakest",
+      "line_rp_spread",
+      "line_rp_lead_minus_deputy",
+      "cup_n_so_far",
+      "cup_top3_rate",
+      "cup_win_rate",
+      "cup_mean_order_n"
+    ],
+    "extra_old": []
+  },
+  {
+    "name": "lgbm_wt_win",
+    "meta": {
+      "model_name": "lgbm_wt_win",
+      "target": "win_flag",
+      "full_refit": true,
+      "from": "2022-12-01",
+      "to": null,
+      "test_from": null,
+      "test_to": null,
+      "n_train_races": 100696,
+      "fit_rows": 712765,
+      "test_auc_holdout": 0.827594976769519,
+      "feature_count": 60,
+      "trained_at": "2026-08-04T08:36:07",
+      "git_commit": "1fea5f9"
+    },
+    "sha256": "740d230cf930ac37eb6896cd86773e3c801bdcf7ae0288465f8f0af03fd78347",
+    "feature_count": 60,
+    "current_features_match": false,
+    "missing_current": [
+      "line_leader_rp",
+      "line_leader_rp_gap_top",
+      "line_leader_rp_rank",
+      "line_leader_is_weakest",
+      "line_rp_spread",
+      "line_rp_lead_minus_deputy",
+      "cup_n_so_far",
+      "cup_top3_rate",
+      "cup_win_rate",
+      "cup_mean_order_n"
+    ],
+    "extra_old": []
+  }
+]
