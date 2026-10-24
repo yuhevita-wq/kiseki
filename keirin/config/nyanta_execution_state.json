@@ -1,0 +1,45 @@
+{
+  "updated_at": "2026-10-24T03:00:00Z",
+  "branch": "rebuild/nyanta-type-lab",
+  "original_commit": "6c30a77612848ba241cd6d2b2a40c957a7c37b51",
+  "input_policy": "original builtin imputation; user confirmed",
+  "runs": {
+    "source_audit": 40050266148,
+    "verified_checkpoint": 40052323240,
+    "core_original_input": 40053833992,
+    "original_input_comparison": 40055616264,
+    "odds_walkforward": 40054087951,
+    "odds_training": 40055515403,
+    "cup_metadata": 40054735319,
+    "official_payout_collection": 40052849834,
+    "runtime_pilot": 40056158936,
+    "runtime_full_2026": 40056410288
+  },
+  "completed_models": [
+    "lgbm_wt_eval",
+    "lgbm_wt_win",
+    "odds_tf_n7",
+    "odds_tf_n9"
+  ],
+  "actual_source_races": 105167,
+  "label_usable_races": 105080,
+  "core_fit_races": 82723,
+  "core_holdout_races": 22357,
+  "core_holdout_overlap": 0,
+  "frozen_fit_end": "2025-12-31",
+  "measured_type_comparison": {
+    "equal": 71,
+    "compared": 76,
+    "issuance_asof_verified": false
+  },
+  "native_runtime_pilot": "waiting_or_running; verify Actions before claiming completed",
+  "full_2026_replay": "gated on successful pilot and corresponding monthly actual payouts",
+  "original_model_full_output_equality_proven": false,
+  "formal_point_in_time_roi_proven": false,
+  "superseded_runs": {
+    "extra_zero_score_exclusion_baseline": 40050812352,
+    "incomplete_checkpoint_initial_payout_pilot": 40052004497,
+    "cancelled_waiting_odds_preparation": 40054390102,
+    "cancelled_waiting_runtime_pilot": 40055865932
+  }
+}
