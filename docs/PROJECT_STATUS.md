@@ -358,3 +358,76 @@
 - 新しいテーブルを `create_table` だけで足すと、ORM 同期ガードをすり抜ける
 - worktree には `node_modules` も `backend/.venv` も無い。本体からシンボリックリンクを張る
 - 静的検査は目視の代わりにならない（#422 は面を縛ったが、その上の文字が壊れていた）
+
+
+## 5. にゃんた再構築（独立フォーク・2026-10-24）
+
+この節は `yuhevita-wq/kiseki` の `rebuild/nyanta-type-lab` 専用。本番の改修・別AIへの統合ではない。
+元・フォークの固定コミットはともに `6c30a77612848ba241cd6d2b2a40c957a7c37b51`。
+データ元の開始コミットは `yuhevita-wq/keirin@8f02176a733490f5d510cf5f64e38613cd14672a`。
+特徴量の列順と関連18ファイルのSHA256は `keirin/config/nyanta_reconstruction_lock.json`。
+元の学習・推論・分類・買い目・配分ソースは変更していない。
+
+### 5.1 元実装の実際の呼び出し経路
+
+| 処理 | 元実装・呼び出し |
+|---|---|
+| 入力 | `feature_wt.load_raw_data_wt` → `wt_entries`・`wt_races`・`venue_info`。履歴も実DBから読む |
+| 特徴量 | `build_features_wt` → rolling・得点トレンド・S/B/上がり履歴・隊列・レース種別・ライン実力・節内成績 → `prepare_X`。現行70列。H2H・ex遅れ率は70列に含まれない |
+| 基盤学習 | CLI `train-wt` → `train_lgbm`。日付順5分割CV、先頭60% burn-in、500木・学習率0.05・31葉・min_child_samples20・colsample0.8・seed42・早期停止50。最終保存モデルは指定学習窓全件でfit |
+| 学習と配信 | p3=`lgbm_wt_eval`、pw=`lgbm_wt_win`。`build_type_lab_picks.predict_p3_pw` が同じ特徴量を両モデルへ通す。型ラボは生p3。表示の較正とは別 |
+| 予測オッズ | `train_odds_prediction_tf.main` → 元の`build_race_features`（63列）→ log10最終オッズのLightGBM回帰・600rounds・63葉・lr0.05・min_leaf200・feature/bagging0.8・bagging_freq1。`odds_prediction_tf.predict_board` が車数別モデル・メタをロードし学習窓のΣ1/oddsへ整合化 |
+| 三連複 | 型ラボは独立三連複モデルではなく `_fold_to_trio` で三連単予測板の順列を畳む。`train_odds_prediction.py`も関連元コードとして保持。正式入稿の保守化などの依存は別途確認対象 |
+| A〜F | `race_shape` → `type_label_of`。axis_sumはp3上位2車の和、境界1.44。arare≤-1でA/D、0でB/E、≥1でC/F（前者が堅い側）。arareはライン人数・先頭遅れ率11%・先頭脚質・開催日目・番手/先頭得点比較の元加算式 |
+| 候補生成 | `type_lab_morning._build_picks` → `run_live` → 入力欠損ガード → `rows_for_race` → `plans_for` → `build_with_gate_fallback` → `build_legs`・`allocate`・ライン差替・順序差替・押さえ・並び追加 → `add_upper_band` |
+| 配分 | 元`allocate/_allocate_once`を使用。予算10,000円・100円単位。プラン別にdutch/equal/最低払戻床＋確率傾斜。全プランを均等配分と解釈してはいけない。現行29プラン |
+| 正式採用 | `netkeirin_submit_type_lab._load_rows`→`sell_plans_for`→`run`。候補生成と正式採用は別。軸ゲートの正本は`backend/src/services/keirin_type_lab_gate.py`。平均想定払戻・点オッズ・日次上限0.5・例外枠・開催中の既入稿状態・決勝免除ABも必要 |
+| 表示/入稿整形 | `type_lab_submission.build_submission` は保存された買い目・金額を整形。再配分しない。外部への予想投稿は今回実行していない |
+| 採点 | `settle_type_lab_picks`→`official_payoffs`。現行は公式払戻だけで採点。同着を含むため確定オッズ×賭金への代用は禁止 |
+
+`TIER_SELL_ENABLED=False`。段プランは生成されるが正式な売り物と同一視しない。
+`lgbm_wt_top2`は出走表の2着内率表示用（無い場合None）。`lgbm_wt_bad`は旧学習キャッシュなどで使用するが現在の型ラボp3/pw推論の必須ヘッドではない。
+オッズ学習には過去時点のp3/pwが必要。現行モデルを過去へ一括適用した値では代用しない。
+旧7車キャッシュの指定には`f60`と複数開始日の混在が残るため、再生成のデータ系譜を区別する。
+
+### 5.2 実測したデータとモデル
+
+Actions `yuhevita-wq/keirin/actions/runs/40050266148` は成功。
+2023-07の31日・2023-08の12日、計43日分を既存暗号化Actions成果物からReleaseへ復旧。
+再収集は実行していない。全46か月・1,392日を実復号してSQLite quick_check、自然キー重複、列欠損、券種別件数、取得時刻を検査した。
+
+- 実体: 105,167レース、745,485出走、37,082,193オッズ。進捗ファイルの88,075レースは全体実数ではなかった。
+- 正常な正の着順734,841行・DNF=0が10,046行・着順欠損598行。
+- 日別自然キー重複0・日付違い0・SQLite整合異常0・出走表ゼロのレース0。
+- レース表の登録車数と実エントリー数が違うもの1,137レース。欠車との区別が必要であり、架空車番を追加しない。
+- `ex_left_behind_pct`・ライン・得点・脚質・開催日目は保存されている。一方、`wt_odds_snapshot`は全日0行、`wt_payoffs`テーブルは全日存在しない。
+- `created_at`/`collected_at`は2026年の収集時刻。元レースの予測時点であることを証明しない。特に開催中更新されるbehindから、元の朝の型を無条件に復元してはいけない。
+- 元の2022-12開始と今回2023-01開始の31日差は維持・明記する。前月の履歴を捏造しない。
+
+元`nyanta-kun/kiseki`にReleaseは無し。旧`nyanta-kun/keirin`の`models-latest`にはlgbm_wt/lgbm_wt_bad/lgbm_wt_winがあるが、実ロードで3本とも60特徴量。現行70列に対して先頭/ライン6列と節内4列が不足しており、そのまま現行モデルとして使わない。p3の現行evalモデルと車数別tfオッズモデルはこのReleaseに無い。
+
+全監査の集計は`keirin/config/nyanta_source_audit_summary.json`、旧モデルの実測照合は`nyanta_original_model_inventory.json`。
+
+### 5.3 再構築の実装・実行
+
+- `keirin/scripts/reconstruct_audit.py`: 既存のActionsシークレットをstdin経由でGPGへ渡して実データ監査。平文とキーを成果物に含めない。
+- `keirin/scripts/reconstruct_core.py`: 元SQLiteの自然キーを保った統合、暗号化チェックポイント、元CLI学習の呼び出し、2026年のAUC/log loss/Brier/10区分較正。ダウンロードは並列、GPGは直列化。実際の元の70特徴量とtrain_lgbmを使用。
+- 必須の生入力欠損/得点0を含むレースは数値補完で埋めず、学習入力から除外して件数を記録する。履歴不足に対する元コードの既定処理は改変しない。
+- p3は2026年からのholdoutを指定してno-full-refit。winは元のfull-refit動作を維持しつつ入力上限を2025-12-31に固定し、保存後2026年を別評価。これにより2026結果をモデルfitへ入れない。
+- 学習途中の未完成モデルから正式な予想は生成しない。
+- 最初の学習実行`40050685451`は並列GPGで失敗。直列化・再試行を実装して`40050812352`へ再実行。再実行の準備/学習/保存状態はActionsを正本として確認する。
+- 元の型ラボ関連テスト970 passed/6 skipped。全体preflightも通過（競輪3150 passed/17 skipped、Windows改行検査78 passed/4 skipped）。元ソース18ファイルのハッシュは全一致。
+
+### 5.4 元出力の比較と未解決の限界
+
+2026-10-23の元公開API出力を取得し、`keirin/reconstruction/original_reference_20261023.json.gz`へ保存。82レースの表示断面（sold=61）と537候補プラン行（76レース）がある。
+取得時刻・URL・SHA256・比較上の注意は`keirin/config/nyanta_reference_manifest.json`。
+保存済み元axis_sum/arareから元の`type_label_of`を再実行すると537/537一致。7車・9車・逃げ先頭・混戦逃げの4つのrule_versionも元公開出力と一致。
+**これは元入力を与えた分類関数の一致であり、新学習モデルの型一致率ではない。**
+個別選手の公開表示確率は入稿後に上書きされうるため「入稿時の元確率」とは断定しない。
+新モデルの確率・採用プラン・券種・買い目・金額・見送りの一致率は、実際の新モデル結果が揃うまで未算出。
+
+現時点で未完成: odds_tf_n7/n9の再学習、型ラボの新モデル実データ接続、採用経路の再現、公式払戻による未使用期間ROI。
+履歴behindの予測時点スナップショット不在は正式な時点整合バックテストの制約。
+さらに、2026年を基盤モデルの未学習期間としても、**元の型/買い方の規則そのものは2026年の結果で研究・変更されている**ため、システム全体について完全未使用の2026年とは呼べない。元規則を改変してこの問題を隠さない。
+ハルキュー・裏ハルキュー・他リポジトリのモデル/Webは変更していない。
