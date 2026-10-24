@@ -1,0 +1,265 @@
+{
+  "source": "https://api.galloplab.com/api/keirin/netkeirin-settings",
+  "captured_at": "2026-10-24T01:48:47.960463+00:00",
+  "settings": [
+    {
+      "rank_key": "S1",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "_global",
+      "enabled": true,
+      "auto_publish": true,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7S",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "T_firm",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "T_mid",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "T_axis",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "T_upset",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "A_trio",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "A_ana",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "A_sign",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "A_big",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "B_sign",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "B_big",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "C_sign",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "C_big",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "D_sign",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "D_big",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "E_sign",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "E_big",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "F_hit",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "F_line",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "F_sign",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "F_big",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "9SS",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "9S",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7A",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7B",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "9A",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7H2",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7T1",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7C",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7H1",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7M1",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "9H1",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7SS",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "7T3",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "9C",
+      "enabled": false,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "A_hit",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "B_hit",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "C_hit",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "D_hit",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "E_hit",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    },
+    {
+      "rank_key": "F_pay",
+      "enabled": true,
+      "auto_publish": false,
+      "axis_gate_enabled": true
+    }
+  ],
+  "note": "Read-only current flags; historical settings at issuance are not established by this snapshot."
+}
