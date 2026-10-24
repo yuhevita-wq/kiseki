@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-23",
+  "reference_entries": 592,
+  "missing_entries": 0,
+  "fields": {
+    "line_group": {
+      "compared": 592,
+      "equal": 592,
+      "missing": 0
+    },
+    "line_pos": {
+      "compared": 592,
+      "equal": 592,
+      "missing": 0
+    },
+    "style": {
+      "compared": 592,
+      "equal": 592,
+      "missing": 0
+    },
+    "race_point": {
+      "compared": 592,
+      "equal": 592,
+      "missing": 0
+    },
+    "prediction_mark": {
+      "compared": 592,
+      "equal": 592,
+      "missing": 0
+    }
+  },
+  "reference_captured_at": "2026-10-24T01:42:18.416847+00:00",
+  "original_morning_asof_verified": false,
+  "behind_comparison": "Not available in captured original card fields; cannot prove morning extended-stat equality"
+}
