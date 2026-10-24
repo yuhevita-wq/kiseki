@@ -16,6 +16,8 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
@@ -24,6 +26,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.reconstruct_audit import SOURCE_REPO, api
+
+_GPG_LOCK = threading.Lock()
 
 
 def crypt(source: Path, target: Path, decrypt: bool = False) -> None:
@@ -39,19 +43,26 @@ def crypt(source: Path, target: Path, decrypt: bool = False) -> None:
         "loopback",
         "--passphrase-fd",
         "0",
+        "--no-symkey-cache",
         "--output",
         str(target),
     ]
     cmd += ["--decrypt"] if decrypt else ["--symmetric", "--cipher-algo", "AES256"]
-    p = subprocess.run(
-        cmd + [str(source)],
-        input=secret.encode(),
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if p.returncode:
-        raise RuntimeError("decryption_failed" if decrypt else "encryption_failed")
+    # gpg-agent initializes shared state; concurrent first-use can race even
+    # though archive names differ. Parallelize downloads, serialize crypto.
+    with _GPG_LOCK:
+        for attempt in range(3):
+            p = subprocess.run(
+                cmd + [str(source)],
+                input=secret.encode(),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            if p.returncode == 0:
+                return
+            time.sleep(attempt + 1)
+    raise RuntimeError("decryption_failed" if decrypt else "encryption_failed")
 
 
 def merge_day(source: Path, dest: sqlite3.Connection) -> dict[str, Any]:
