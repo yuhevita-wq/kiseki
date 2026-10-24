@@ -285,8 +285,8 @@ def train(
 
     assert len(f.FEATURE_COLS_WT) == 70
     original_loader = f.load_raw_data_wt
-    # Do not manufacture raw values for missing required fields. History functions
-    # still read actual prior results from the full DB via the original code.
+    # User confirmed that ORIGINAL builtin imputation is part of reproduction.
+    # Audit missing values, but do not add a new race-exclusion policy here.
     raw = original_loader("2023-01-01", "2026-10-23")
     required = [
         "race_point",
@@ -316,7 +316,7 @@ def train(
     ]
     null_bad = raw[required].isna().any(axis=1) | raw["race_point"].eq(0)
     bad_keys = set(raw.loc[null_bad, "race_key"])
-    clean = raw[~raw.race_key.isin(bad_keys)].copy()
+    clean = raw.copy()
 
     def validated_loader(
         min_date: str = "2025-01-01", max_date: str | None = None
@@ -387,7 +387,9 @@ def train(
         "usable_races": int(
             clean.loc[clean.finish_order.notna(), "race_key"].nunique()
         ),
-        "excluded_missing_input_races": len(bad_keys),
+        "excluded_missing_input_races": 0,
+        "raw_input_races_with_null_or_zero_score": len(bad_keys),
+        "input_policy": "original builtin imputation unchanged; confirmed by user",
         "missing_raw_fields": {c: int(raw[c].isna().sum()) for c in required},
         "train_races": len(fit_keys),
         "holdout_races": len(hold_keys),
