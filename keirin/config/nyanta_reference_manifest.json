@@ -1,0 +1,13 @@
+{
+  "captured_at": "2026-10-24T01:42:18.416847+00:00",
+  "source_urls": {
+    "type_lab": "https://api.galloplab.com/api/keirin/type-lab?date_from=2026-10-23&date_to=2026-10-23&mode=live,live9&limit=5000",
+    "displayed": "https://api.galloplab.com/api/keirin/picks?date=2026-10-23&include_all=true"
+  },
+  "reference_file": "keirin/reconstruction/original_reference_20261023.json.gz",
+  "sha256": "a14fa09d93d5d62e6a4ecca75b796e1c0be4e85686523bbd1569b7be46e45dd3",
+  "generated_plan_rows": 537,
+  "displayed_races": 82,
+  "sold_races": 61,
+  "note": "type_lab includes generated comparison plans; displayed probabilities may be overwritten after original issuance; not the original learned model"
+}
