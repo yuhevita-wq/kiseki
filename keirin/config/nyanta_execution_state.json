@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-24T03:06:00Z",
+  "updated_at": "2026-10-24T03:07:00Z",
   "branch": "rebuild/nyanta-type-lab",
   "original_commit": "6c30a77612848ba241cd6d2b2a40c957a7c37b51",
   "input_policy": "original builtin imputation; user confirmed",
@@ -14,7 +14,8 @@
     "official_payout_collection": 40052849834,
     "runtime_pilot": 40056158936,
     "runtime_full_2026": 40056410288,
-    "aggregate_actual_replay": 40056774690
+    "aggregate_actual_replay": 40056774690,
+    "actual_card_input_comparison": 40056898378
   },
   "completed_models": [
     "lgbm_wt_eval",
@@ -42,5 +43,18 @@
     "incomplete_checkpoint_initial_payout_pilot": 40052004497,
     "cancelled_waiting_odds_preparation": 40054390102,
     "cancelled_waiting_runtime_pilot": 40055865932
+  },
+  "measured_original_card_input_agreement": {
+    "entries": 592,
+    "fields": [
+      "line_group",
+      "line_pos",
+      "style",
+      "race_point",
+      "prediction_mark"
+    ],
+    "each_field_equal": 592,
+    "missing": 0,
+    "morning_asof_verified": false
   }
 }
