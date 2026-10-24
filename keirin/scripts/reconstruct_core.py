@@ -328,6 +328,17 @@ def train(
 
     f.load_raw_data_wt = validated_loader
     model_name = "lgbm_wt_eval" if target == "top3" else "lgbm_wt_win"
+    if not do_fit:
+        metadata = json.loads(
+            (ROOT / "data/models" / (model_name + ".meta.json")).read_text()
+        )
+        expected_fit_rows = int(
+            ((clean.race_date < "2026-01-01") & clean.finish_order.notna()).sum()
+        )
+        if int(metadata["fit_rows"]) != expected_fit_rows:
+            raise RuntimeError(
+                "saved_model_training_rows_do_not_match_verified_training_corpus"
+            )
     # win full-refits only <=2025-12-31, preserving the original full_refit mode
     # while never absorbing the external 2026 holdout into the saved model.
     if do_fit:
