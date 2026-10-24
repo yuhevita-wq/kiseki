@@ -133,6 +133,19 @@ def save_database_checkpoint(db: Path, output: Path, report: dict[str, Any]) -> 
             dst.close()
         encrypted_tmp = output.with_suffix(".gpg.tmp")
         crypt(snapshot, encrypted_tmp)
+        restored = Path(tmp) / "restored.sqlite"
+        crypt(encrypted_tmp, restored, decrypt=True)
+        verifier = sqlite3.connect(restored)
+        try:
+            verified = {
+                t: verifier.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+                for t in expected
+            }
+            if verified != expected:
+                raise RuntimeError("encrypted_checkpoint_roundtrip_mismatch")
+            report["encrypted_roundtrip_verified"] = True
+        finally:
+            verifier.close()
         encrypted_tmp.replace(output)
     output.with_suffix(".manifest.json").write_text(json.dumps(report, indent=2) + "\n")
 
