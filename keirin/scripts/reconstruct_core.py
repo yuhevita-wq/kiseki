@@ -105,6 +105,38 @@ def merge_day(source: Path, dest: sqlite3.Connection) -> dict[str, Any]:
     return counts
 
 
+def save_database_checkpoint(db: Path, output: Path, report: dict[str, Any]) -> None:
+    """Capture committed WAL frames with SQLite backup, verify, then encrypt."""
+    expected = {
+        t: sum(d["rows"][t] for d in report["days"]) for t in ("wt_races", "wt_entries")
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="nyanta-sealed-") as tmp:
+        snapshot = Path(tmp) / "snapshot.sqlite"
+        src, dst = sqlite3.connect(db), sqlite3.connect(snapshot)
+        try:
+            src.backup(dst)
+            actual = {
+                t: dst.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+                for t in expected
+            }
+            if actual != expected:
+                raise RuntimeError("checkpoint_row_counts_do_not_match_source_manifest")
+            report["verified_checkpoint_counts"] = actual
+            report["verified_checkpoint_date_range"] = list(
+                dst.execute(
+                    "SELECT MIN(race_date),MAX(race_date) FROM wt_races"
+                ).fetchone()
+            )
+        finally:
+            src.close()
+            dst.close()
+        encrypted_tmp = output.with_suffix(".gpg.tmp")
+        crypt(snapshot, encrypted_tmp)
+        encrypted_tmp.replace(output)
+    output.with_suffix(".manifest.json").write_text(json.dumps(report, indent=2) + "\n")
+
+
 def prepare(output: Path) -> None:
     """Download existing Releases only, merge all 1,392 days, encrypt checkpoint."""
     from src import database
@@ -152,6 +184,32 @@ def prepare(output: Path) -> None:
     if resumed is not None:
         report = resumed
         done = {item["date"]: item for item in report["days"]}
+        with sqlite3.connect(database.DB_PATH) as check:
+            actual_days = {
+                d: (nr, ne)
+                for d, nr, ne in check.execute(
+                    "SELECT r.race_date,COUNT(DISTINCT r.race_key),COUNT(e.race_key) FROM wt_races r LEFT JOIN wt_entries e USING(race_key) GROUP BY r.race_date"
+                )
+            }
+            invalid = {
+                d
+                for d, item in done.items()
+                if actual_days.get(d, (0, 0))
+                != (item["rows"]["wt_races"], item["rows"]["wt_entries"])
+            }
+            for day in invalid:
+                check.execute(
+                    "DELETE FROM wt_entries WHERE substr(race_key,1,8)=?",
+                    (day.replace("-", ""),),
+                )
+                check.execute("DELETE FROM wt_races WHERE race_date=?", (day,))
+            check.commit()
+        if invalid:
+            report["repaired_incomplete_checkpoint_days"] = sorted(invalid)
+            report["days"] = [
+                item for item in report["days"] if item["date"] not in invalid
+            ]
+            done = {item["date"]: item for item in report["days"]}
         for day, asset in assets:
             if day in done and asset["id"] != done[day]["release_asset_id"]:
                 raise RuntimeError("checkpoint_release_asset_changed")
@@ -187,11 +245,9 @@ def prepare(output: Path) -> None:
                     print(f"merged {day} ({len(report['days'])}/1392)", flush=True)
             # Persist a resumable encrypted checkpoint every 3 months, and finish.
             if (i + 16) % 96 == 0 or i + 16 >= len(assets):
-                output.parent.mkdir(parents=True, exist_ok=True)
-                crypt(database.DB_PATH, output)
-                output.with_suffix(".manifest.json").write_text(
-                    json.dumps(report, indent=2) + "\n"
-                )
+                save_database_checkpoint(database.DB_PATH, output, report)
+    if not assets:
+        save_database_checkpoint(database.DB_PATH, output, report)
     print(
         json.dumps(
             {"merged_days": len(report["days"]), "encrypted_checkpoint": str(output)}
