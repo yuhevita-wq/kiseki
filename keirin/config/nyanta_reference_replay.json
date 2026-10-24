@@ -1,0 +1,29 @@
+{
+  "reference_rows": 537,
+  "comparable_type_rows": 537,
+  "type_function_matches": 537,
+  "unique_races": 76,
+  "type_counts_unique": {
+    "C": 21,
+    "A": 16,
+    "F": 20,
+    "E": 6,
+    "B": 10,
+    "D": 3
+  },
+  "native_rule_versions": {
+    "7": "3bb46fa31f98",
+    "9": "b6b5f6818ce3",
+    "line_lead": "L95fa016436e",
+    "flat_lead": "F0b8e80ffc34"
+  },
+  "reference_rule_versions": [
+    "3bb46fa31f98",
+    "F0b8e80ffc34",
+    "L95fa016436e",
+    "b6b5f6818ce3"
+  ],
+  "model_probability_comparison": null,
+  "new_model_pick_comparison": null,
+  "note": "Replay uses ORIGINAL stored axis_sum/arare, not new model predictions; not proof of reconstructed model output equality."
+}
