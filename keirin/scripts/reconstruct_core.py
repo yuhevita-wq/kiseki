@@ -99,11 +99,20 @@ def prepare(output: Path) -> None:
     from src import database
 
     database.DB_PATH = ROOT / "data" / "keirin.db"
-    database.init_db()
-    database.migrate_db()
-    # init_db's current venue metadata is not substituted for source metadata.
-    with sqlite3.connect(database.DB_PATH) as dst:
-        dst.execute("DELETE FROM venue_info")
+    resumed = None
+    manifest = output.with_suffix(".manifest.json")
+    if output.exists() and manifest.exists():
+        resumed = json.loads(manifest.read_text())
+        if resumed.get("source_repository") != SOURCE_REPO:
+            raise RuntimeError("checkpoint_source_mismatch")
+        database.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        crypt(output, database.DB_PATH, decrypt=True)
+    else:
+        database.init_db()
+        database.migrate_db()
+        # Do not substitute current venue metadata for source metadata.
+        with sqlite3.connect(database.DB_PATH) as dst:
+            dst.execute("DELETE FROM venue_info")
     assets, missing = [], []
     d = date(2023, 1, 1)
     while d <= date(2026, 10, 23):
@@ -129,6 +138,14 @@ def prepare(output: Path) -> None:
         "surrogate_ids": "regenerated; race_key/frame_no preserved",
         "odds": "not copied in core checkpoint; retained in original Releases",
     }
+    if resumed is not None:
+        report = resumed
+        done = {item["date"]: item for item in report["days"]}
+        for day, asset in assets:
+            if day in done and asset["id"] != done[day]["release_asset_id"]:
+                raise RuntimeError("checkpoint_release_asset_changed")
+        assets = [(day, a) for day, a in assets if day not in done]
+        print(f"resumed {len(done)}/1392 days", flush=True)
     with tempfile.TemporaryDirectory(prefix="nyanta-core-") as tmp:
 
         def download(item: tuple[str, dict]) -> tuple[str, Path, dict]:
