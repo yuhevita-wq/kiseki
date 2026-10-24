@@ -53,9 +53,32 @@ def main() -> None:
                         raise RuntimeError("invalid_model_archive")
                     (model_dir / member.name).write_bytes(data.read())
 
+    # The original historical inference path requires an actual frozen vintage.
+    # These models were fit only through Dec 2025, so m2601 is their truthful
+    # vintage (never label them m2610 or disable the original past-date guard).
+    from src.models.trainer import load_model, save_model
+
+    for name in ("lgbm_wt_eval", "lgbm_wt_win"):
+        meta = json.loads((model_dir / (name + ".meta.json")).read_text())
+        if name.endswith("_win"):
+            valid = bool(meta.get("full_refit")) and meta.get("to") == "2025-12-31"
+        else:
+            valid = not meta.get("full_refit") and meta.get("test_from") == "2026-01-01"
+        if not valid:
+            raise RuntimeError("saved_model_is_not_a_frozen_2025_end_model")
+        frozen = name + "_m2601"
+        save_model(load_model(name), frozen)
+        (model_dir / (frozen + ".meta.json")).write_text(
+            json.dumps(
+                {**meta, "model_name": frozen, "frozen_fit_end": "2025-12-31"}, indent=2
+            )
+        )
+
     from scripts.build_type_lab_picks import predict_p3_pw
 
-    p3, pw = predict_p3_pw("2026-10-23")
+    p3, pw = predict_p3_pw(
+        "2026-10-23", eval_model="lgbm_wt_eval_m2601", win_model="lgbm_wt_win_m2601"
+    )
     reference_path = ROOT / "reconstruction/original_reference_20261023.json.gz"
     reference = json.loads(gzip.decompress(reference_path.read_bytes()))
     rows = []
