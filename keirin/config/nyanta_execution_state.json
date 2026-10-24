@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-24T03:00:00Z",
+  "updated_at": "2026-10-24T03:06:00Z",
   "branch": "rebuild/nyanta-type-lab",
   "original_commit": "6c30a77612848ba241cd6d2b2a40c957a7c37b51",
   "input_policy": "original builtin imputation; user confirmed",
@@ -13,7 +13,8 @@
     "cup_metadata": 40054735319,
     "official_payout_collection": 40052849834,
     "runtime_pilot": 40056158936,
-    "runtime_full_2026": 40056410288
+    "runtime_full_2026": 40056410288,
+    "aggregate_actual_replay": 40056774690
   },
   "completed_models": [
     "lgbm_wt_eval",
@@ -32,7 +33,7 @@
     "compared": 76,
     "issuance_asof_verified": false
   },
-  "native_runtime_pilot": "waiting_or_running; verify Actions before claiming completed",
+  "native_runtime_pilot": "completed successfully; 76 candidate races, 55 adopted, 55 settled, pending 0",
   "full_2026_replay": "gated on successful pilot and corresponding monthly actual payouts",
   "original_model_full_output_equality_proven": false,
   "formal_point_in_time_roi_proven": false,
